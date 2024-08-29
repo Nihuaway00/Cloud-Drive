@@ -1,4 +1,11 @@
+FROM maven:3.9.9-amazoncorretto-21 as builder
+WORKDIR /app
+COPY . /app/.
+RUN mvn -f /app/pom.xml clean package -Dmaven.test.skip=true
+
+
 FROM amazoncorretto:21
-VOLUME /server
-COPY target/cloud-service-0.0.1.jar app.jar
-ENTRYPOINT ["java", "-jar", "/app.jar"]
+WORKDIR /app
+COPY --from=builder /app/target/*.jar /app/*.jar
+EXPOSE 8080
+ENTRYPOINT ["java", "-jar", "/app/*.jar"]

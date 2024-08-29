@@ -3,7 +3,7 @@ version: '3.8'
 services:
   postgres:
     container_name: postgres
-    hostname: database.local
+    hostname: postgres.local
     image: postgres:16
     environment:
       POSTGRES_USER: admin
@@ -37,7 +37,11 @@ services:
 
   app:
     container_name: app
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - docker.env
     ports:
       - "8080:8080"
     depends_on:
