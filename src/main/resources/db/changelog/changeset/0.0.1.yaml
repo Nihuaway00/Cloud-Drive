@@ -1,0 +1,124 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1724939373965-3
+      author: Nihuaway00
+      objectQuotingStrategy: QUOTE_ONLY_RESERVED_WORDS
+      changes:
+        - createTable:
+            columns:
+              - column:
+                  autoIncrement: true
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: pk_file
+                  name: id
+                  type: BIGINT
+              - column:
+                  name: author_id
+                  type: BIGINT
+              - column:
+                  constraints:
+                    nullable: false
+                  name: filename
+                  type: VARCHAR(255)
+              - column:
+                  constraints:
+                    nullable: false
+                  name: filetype
+                  type: VARCHAR(255)
+              - column:
+                  constraints:
+                    nullable: false
+                  name: path
+                  type: VARCHAR(255)
+              - column:
+                  constraints:
+                    nullable: false
+                  name: created_at
+                  type: DATE
+            tableName: file
+  - changeSet:
+      id: 1724939373965-4
+      author: Nihuaway00
+      objectQuotingStrategy: QUOTE_ONLY_RESERVED_WORDS
+      changes:
+        - createTable:
+            columns:
+              - column:
+                  autoIncrement: true
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: pk_folder
+                  name: id
+                  type: BIGINT
+              - column:
+                  name: author_id
+                  type: BIGINT
+              - column:
+                  name: parent_id
+                  type: BIGINT
+              - column:
+                  constraints:
+                    nullable: false
+                  name: created_at
+                  type: DATE
+              - column:
+                  constraints:
+                    nullable: false
+                  name: foldername
+                  type: DATE
+            tableName: folder
+  - changeSet:
+      id: 1724939373965-5
+      author: Nihuaway00
+      objectQuotingStrategy: QUOTE_ONLY_RESERVED_WORDS
+      changes:
+        - addForeignKeyConstraint:
+            baseColumnNames: author_id
+            baseTableName: file
+            constraintName: FK_FILE_ON_AUTHOR
+            referencedColumnNames: id
+            referencedTableName: user
+  - changeSet:
+      id: 1724939373965-6
+      author: Nihuaway00
+      objectQuotingStrategy: QUOTE_ONLY_RESERVED_WORDS
+      changes:
+        - addForeignKeyConstraint:
+            baseColumnNames: author_id
+            baseTableName: folder
+            constraintName: FK_FOLDER_ON_AUTHOR
+            referencedColumnNames: id
+            referencedTableName: user
+  - changeSet:
+      id: 1724939373965-7
+      author: Nihuaway00
+      objectQuotingStrategy: QUOTE_ONLY_RESERVED_WORDS
+      changes:
+        - addForeignKeyConstraint:
+            baseColumnNames: parent_id
+            baseTableName: folder
+            constraintName: FK_FOLDER_ON_PARENT
+            referencedColumnNames: id
+            referencedTableName: folder
+  - changeSet:
+      id: 1724939373965-1
+      author: Nihuaway00
+      objectQuotingStrategy: QUOTE_ONLY_RESERVED_WORDS
+      changes:
+        - modifyDataType:
+            columnName: password
+            newDataType: VARCHAR(255)
+            tableName: user
+  - changeSet:
+      id: 1724939373965-2
+      author: Nihuaway00
+      objectQuotingStrategy: QUOTE_ONLY_RESERVED_WORDS
+      changes:
+        - modifyDataType:
+            columnName: username
+            newDataType: VARCHAR(255)
+            tableName: user
+
