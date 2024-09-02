@@ -35,6 +35,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.io.IOException;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -44,15 +45,12 @@ import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @ExtendWith(SpringExtension.class)
 @WebMvcTest(AuthController.class)
 @Import(SecurityConfig.class)
 class AuthControllerUnitTest {
-	@InjectMocks
-	private AuthController authController;
 	@MockBean
 	private UserRepository userRepository;
 
@@ -63,36 +61,36 @@ class AuthControllerUnitTest {
 	void successRegister() throws Exception {
 		UserRegisterDto dto = UserRegisterDto.builder()
 				.username("username@gmail.com")
-				.password("III12345")
+				.password("A1b2c3")
 				.build();
-		verify(userRepository).save(any(User.class));
 
 		ObjectMapper mapper = new ObjectMapper();
-
 		mockMvc.perform(post("/auth/register")
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(mapper.writeValueAsString(dto)))
-				.andExpect(status().isOk())
-				.andExpect(redirectedUrl(anyString()));
+				.andExpect(status().isOk());
+
+		verify(userRepository).save(any(User.class));
 	}
 
 	@Test
 	void userAlreadyRegistered() throws Exception {
 		UserRegisterDto dto = UserRegisterDto.builder()
 				.username("username@gmail.com")
-				.password("III12345")
+				.password("A1b2c3")
 				.build();
 
 		User duplicate = new User(1L, dto.getUsername(), dto.getPassword());
 		when(userRepository.findByUsername(dto.getUsername())).thenReturn(Optional.of(duplicate));
 
-		verify(userRepository).findByUsername(dto.getUsername());
 		ObjectMapper mapper = new ObjectMapper();
-
 		mockMvc.perform(post("/auth/register")
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(mapper.writeValueAsString(dto)))
 				.andExpect(status().isConflict());
+
+		verify(userRepository).findByUsername(anyString());
+
 	}
 
 
