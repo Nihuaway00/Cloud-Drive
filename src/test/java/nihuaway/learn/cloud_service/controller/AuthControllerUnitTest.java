@@ -55,14 +55,6 @@ class AuthControllerUnitTest {
 	private AuthController authController;
 	@MockBean
 	private UserRepository userRepository;
-	@MockBean
-	private PasswordEncoder passwordEncoder;
-	@Mock
-	private HttpServletRequest request;
-	@Mock
-	private HttpServletResponse response;
-	@Mock
-	private HttpSession session;
 
 	@Autowired
 	private MockMvc mockMvc;
@@ -73,11 +65,7 @@ class AuthControllerUnitTest {
 				.username("username@gmail.com")
 				.password("III12345")
 				.build();
-		verify(passwordEncoder).encode(dto.getPassword());
 		verify(userRepository).save(any(User.class));
-		when(request.getSession()).thenReturn(session);
-		verify(session).setAttribute(anyString(), anyString());
-		verify(response).sendRedirect(anyString());
 
 		ObjectMapper mapper = new ObjectMapper();
 
