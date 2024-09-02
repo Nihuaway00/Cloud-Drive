@@ -84,7 +84,7 @@ class AuthControllerUnitTest {
 				.build();
 
 		User duplicate = new User(1L, dto.getUsername(), dto.getPassword());
-		when(userRepository.findByUsername(dto.getUsername())).thenReturn(duplicate);
+		when(userRepository.findByUsername(dto.getUsername())).thenReturn(Optional.of(duplicate));
 
 		verify(userRepository).findByUsername(dto.getUsername());
 		ObjectMapper mapper = new ObjectMapper();
