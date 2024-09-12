@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import nihuaway.learn.cloud_service.config.SecurityConfig;
+import nihuaway.learn.cloud_service.dto.UserLoginDto;
 import nihuaway.learn.cloud_service.dto.UserRegisterDto;
 import nihuaway.learn.cloud_service.entity.User;
 import nihuaway.learn.cloud_service.repository.UserRepository;
@@ -117,6 +118,59 @@ class AuthControllerUnitTest {
 
 		ObjectMapper mapper = new ObjectMapper();
 		mockMvc.perform(post("/auth/register")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(mapper.writeValueAsString(dto)))
+				.andExpect(status().isBadRequest());
+	}
+
+	@Test
+	void successLogin() throws Exception {
+		UserLoginDto dto = UserLoginDto.builder()
+				.username("username@gmail.com")
+				.password("Password123")
+				.build();
+
+		User root = new User(1L, dto.getUsername(), dto.getPassword());
+		when(userRepository.findByUsername(dto.getUsername())).thenReturn(Optional.of(root));
+
+		ObjectMapper mapper = new ObjectMapper();
+		mockMvc.perform(post("/auth/login")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(mapper.writeValueAsString(dto)))
+				.andExpect(status().isOk());
+
+		verify(userRepository).findByUsername(anyString());
+	}
+
+	@Test
+	void badPasswordLogin() throws Exception {
+		UserLoginDto dto = UserLoginDto.builder()
+				.username("username@gmail.com")
+				.password("fakePass")
+				.build();
+
+
+		User root = new User(1L, dto.getUsername(), "truePass123");
+		when(userRepository.findByUsername(dto.getUsername())).thenReturn(Optional.of(root));
+
+		ObjectMapper mapper = new ObjectMapper();
+		mockMvc.perform(post("/auth/login")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(mapper.writeValueAsString(dto)))
+				.andExpect(status().isBadRequest());
+	}
+
+	@Test
+	void userNotRegistered() throws Exception {
+		UserLoginDto dto = UserLoginDto.builder()
+				.username("notexists@gmail.com")
+				.password("Password123")
+				.build();
+
+		when(userRepository.findByUsername(dto.getUsername())).thenReturn(Optional.empty());
+
+		ObjectMapper mapper = new ObjectMapper();
+		mockMvc.perform(post("/auth/login")
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(mapper.writeValueAsString(dto)))
 				.andExpect(status().isBadRequest());
