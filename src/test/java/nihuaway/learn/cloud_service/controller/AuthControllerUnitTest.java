@@ -87,7 +87,7 @@ class AuthControllerUnitTest {
 		mockMvc.perform(post("/auth/register")
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(mapper.writeValueAsString(dto)))
-				.andExpect(status().isConflict());
+				.andExpect(status().isBadRequest());
 
 		verify(userRepository).findByUsername(anyString());
 
