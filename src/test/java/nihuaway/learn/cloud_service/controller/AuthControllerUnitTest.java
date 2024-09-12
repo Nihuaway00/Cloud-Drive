@@ -2,15 +2,20 @@ package nihuaway.learn.cloud_service.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Jwk;
+import io.jsonwebtoken.security.SignatureAlgorithm;
 import jakarta.servlet.Filter;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import nihuaway.learn.cloud_service.config.SecurityConfig;
+import nihuaway.learn.cloud_service.dto.JwtResponse;
 import nihuaway.learn.cloud_service.dto.UserLoginDto;
 import nihuaway.learn.cloud_service.dto.UserRegisterDto;
 import nihuaway.learn.cloud_service.entity.User;
 import nihuaway.learn.cloud_service.repository.UserRepository;
+import nihuaway.learn.cloud_service.util.JwtUtil;
 import org.junit.Before;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,10 +37,12 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MockMvcBuilder;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.io.IOException;
+import java.security.Key;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -43,6 +50,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.data.redis.connection.ReactiveStreamCommands.AddStreamRecord.body;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -134,10 +142,28 @@ class AuthControllerUnitTest {
 		when(userRepository.findByUsername(dto.getUsername())).thenReturn(Optional.of(root));
 
 		ObjectMapper mapper = new ObjectMapper();
-		mockMvc.perform(post("/auth/login")
+		MvcResult result = mockMvc.perform(post("/auth/login")
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(mapper.writeValueAsString(dto)))
-				.andExpect(status().isOk());
+				.andExpect(status().isOk())
+				.andReturn();
+
+		String content = result.getResponse().getContentAsString();
+
+		assertNotNull(content);
+		assertNotEquals("", content);
+		JwtResponse jwtResponse = mapper.readValue(content, JwtResponse.class);
+		assertNotNull(jwtResponse);
+
+		assertDoesNotThrow(() -> Jwts.parser()
+				.verifyWith(JwtUtil.getSecretKey())
+				.build()
+				.parse(jwtResponse.getAccessToken()));
+
+		assertDoesNotThrow(() -> Jwts.parser()
+				.verifyWith(JwtUtil.getSecretKey())
+				.build()
+				.parse(jwtResponse.getRefreshToken()));
 
 		verify(userRepository).findByUsername(anyString());
 	}
