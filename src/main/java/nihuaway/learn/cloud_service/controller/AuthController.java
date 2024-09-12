@@ -1,6 +1,7 @@
 package nihuaway.learn.cloud_service.controller;
 
 import jakarta.validation.Valid;
+import nihuaway.learn.cloud_service.dto.UserLoginDto;
 import nihuaway.learn.cloud_service.dto.UserRegisterDto;
 import nihuaway.learn.cloud_service.entity.User;
 import nihuaway.learn.cloud_service.repository.UserRepository;
@@ -12,6 +13,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/auth")
@@ -43,8 +46,16 @@ public class AuthController {
 	}
 
 	@PostMapping("/login")
-	public void login() {
+	public ResponseEntity<?> login(@RequestBody UserLoginDto dto) {
+		Optional<User> user = userRepository.findByUsername(dto.getUsername());
+		if(user.isEmpty()) {
+			return new ResponseEntity<>("Такой пользователь не существует", HttpStatus.BAD_REQUEST);
+		}
+		if(!user.get().getPassword().equals(dto.getPassword())){
+			return new ResponseEntity<>("Неверный пароль", HttpStatus.BAD_REQUEST);
+		}
 
+		return ResponseEntity.ok().build();
 	}
 
 	@PostMapping("/logout")
